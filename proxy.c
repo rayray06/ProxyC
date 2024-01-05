@@ -320,8 +320,10 @@ int main()
                     exit(3);
                 }
                 readbuffer[ecode] = '\0';
-                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
-                write(descSockCOM, readbuffer, strlen(readbuffer));
+                strcpy(writebuffer, readbuffer);
+                strcat(writebuffer, "\r\n\0");
+                printf("MESSAGE RECU DU SERVEUR: %s |", writebuffer);
+                write(descSockCOM, writebuffer, strlen(writebuffer));
             }
         }
     }
