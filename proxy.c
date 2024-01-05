@@ -276,18 +276,22 @@ int main()
                 // Now, handle the data flow from the data connection (descSockServerData)
                 while ((ecode = read(descSockServerData, readbuffer, MAXBUFFERLEN)) > 0)
                 {
+                    readbuffer[ecode] = '\0'
                     // Process the data as needed, you might want to send it to descSockCOM
                     printf("MESSAGE RECU DU SERVEUR DATA: %s", readbuffer);
-                    write(descSockData, readbuffer, ecode);
+                    write(descSockData, readbuffer, len(readbuffer));
                 }
-                printf("MESSAGE RECU DU SERVEUR DATA: %s", readbuffer);
-                write(descSockData, readbuffer, ecode);
+
 
                 if (ecode == -1)
                 {
                     perror("Problème de lecture depuis la connexion de données\n");
                     exit(3);
                 }
+                
+                readbuffer[ecode] = '\0'
+                printf("MESSAGE RECU DU SERVEUR DATA: %s", readbuffer);
+                write(descSockData, readbuffer, len(readbuffer));
 
                 // Optionally, read any additional response from the server
                 ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
