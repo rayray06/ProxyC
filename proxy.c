@@ -289,9 +289,9 @@ int main()
                     exit(3);
                 }
 
-                // strcpy(readbuffer, "\r\n\0");
-                // printf("MESSAGE RECU DU SERVEUR DATA: %s", readbuffer);
-                // write(descSockData, readbuffer, strlen(readbuffer));
+                strcpy(readbuffer, "\r\n\0");
+                printf("MESSAGE RECU DU SERVEUR DATA: %s", readbuffer);
+                write(descSockData, readbuffer, strlen(readbuffer));
 
                 // Optionally, read any additional response from the server
                 ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
@@ -302,7 +302,8 @@ int main()
                 }
                 readbuffer[ecode] = '\0';
                 
-                strcpy(writebuffer, "226 Transfer complete.\r\n");
+                strcpy(writebuffer, readbuffer);
+                strcat(writebuffer, "\r\n\0");
                 printf("MESSAGE RECU DU SERVEUR: %s", writebuffer);
 
                 // Send the additional response to the client on the control connection
