@@ -22,7 +22,9 @@ int main()
     char serverPort[MAXPORTLEN];    // Port du server
     int descSockRDV;                // Descripteur de socket de rendez-vous
     int descSockCOM;                // Descripteur de socket de communication
+    int descSockData;                // Descripteur de socket de communication
     int descSockServer;             // Descripteur de la socket utiliser en tant que client
+    int descSockServerData;             // Descripteur de la socket utiliser en tant que client
     struct addrinfo hints;          // Contrôle la fonction getaddrinfo
     struct addrinfo *res;           // Contient le résultat de la fonction getaddrinfo
     struct sockaddr_storage myinfo; // Informations sur la connexion de RDV
@@ -205,6 +207,69 @@ int main()
                 readbuffer[ecode] = '\0';
                 printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
                 write(descSockCOM, readbuffer, strlen(readbuffer));
+            }
+            else if (strncmp(readbuffer, "PORT", 4) == 0)
+            {
+                printf("Commande PORT reçue : %s\n", readbuffer);
+
+                int add1, add2, add3, add4, port1, port2;
+
+                // Use proper format specifiers for integers in sscanf
+                sscanf(readbuffer, "PORT %d,%d,%d,%d,%d,%d", &add1, &add2, &add3, &add4, &port1, &port2);
+
+                memset(&hints, 0, sizeof hints);
+                hints.ai_flags = AI_PASSIVE;     // mode serveur, nous allons utiliser la fonction bind
+                hints.ai_family = AF_INET;
+                hints.ai_socktype = SOCK_STREAM;
+
+                // Convert IP address and port to sockaddr structure
+                char ip_address[INET_ADDRSTRLEN];
+                snprintf(ip_address, sizeof(ip_address), "%d.%d.%d.%d", add1, add2, add3, add4);
+
+                char port_str[6]; // Assuming a maximum port length of 5 digits
+                snprintf(port_str, sizeof(port_str), "%d", (port1 << 8) + port2);
+
+                ecode getaddrinfo(ip_address, port_str, &hints, &res)
+                if (ecode)
+                {
+                    fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(ecode));
+                    exit(1);
+                }
+                // Publication de la socket
+                ecode = bind(descSockRDV, res->ai_addr, res->ai_addrlen);
+                if (ecode == -1)
+                {
+                    perror("Erreur liaison de la socket de RDV");
+                    exit(3);
+                }
+
+                // Publication de la socket
+                ecode = bind(descSockData, res->ai_addr, res->ai_addrlen);
+                if (ecode == -1)
+                {
+                    perror("Erreur liaison de la socket de RDV");
+                    exit(3);
+                }
+                // Nous n'avons plus besoin de cette liste chainée addrinfo
+                freeaddrinfo(res);
+
+                strcpy(writebuffer, "PASSV");
+                strcat(writebuffer, nomlogin);
+                strcat(writebuffer, "\r\n\0");
+
+                printf("---> %s", writebuffer);
+                write(descSockServer, writebuffer, strlen(writebuffer));
+
+                // Echange de donneés avec le serveur
+                ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
+                if (ecode == -1)
+                {
+                    perror("Problème de lecture\n");
+                    exit(3);
+                }
+                readbuffer[ecode] = '\0';
+                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+
             }
             else
             {
