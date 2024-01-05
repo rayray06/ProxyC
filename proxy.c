@@ -168,7 +168,7 @@ int main()
                 }
                 readbuffer[ecode] = '\0';
                 printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
-                write(descSockClient, writebuffer, strlen(writebuffer));
+                // write(descSockCOM, writebuffer, strlen(writebuffer));
 
 
                 strcpy(writebuffer, "USER ");
@@ -176,7 +176,7 @@ int main()
                 strcat(writebuffer, "\r\n\0");
 
 
-                printf("--> %s", writebuffer);
+                printf("---> %s", writebuffer);
                 write(descSockClient, writebuffer, strlen(writebuffer));
 
                 // Echange de donneés avec le serveur
