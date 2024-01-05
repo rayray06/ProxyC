@@ -236,10 +236,10 @@ int main()
                     exit(1);
                 }
                 // Publication de la socket
-                ecode = bind(descSockRDV, res->ai_addr, res->ai_addrlen);
+                ecode = bind(descSockData, res->ai_addr, res->ai_addrlen);
                 if (ecode == -1)
                 {
-                    perror("Erreur liaison de la socket de RDV");
+                    perror("Erreur liaison de la socket de Data");
                     exit(3);
                 }
 
@@ -247,7 +247,7 @@ int main()
                 ecode = bind(descSockData, res->ai_addr, res->ai_addrlen);
                 if (ecode == -1)
                 {
-                    perror("Erreur liaison de la socket de RDV");
+                    perror("Erreur liaison de la socket de Data");
                     exit(3);
                 }
                 // Nous n'avons plus besoin de cette liste chainée addrinfo
