@@ -217,6 +217,14 @@ int main()
                 // Use proper format specifiers for integers in sscanf
                 sscanf(readbuffer, "PORT %d,%d,%d,%d,%d,%d", &add1, &add2, &add3, &add4, &port1, &port2);
 
+                // Initialisation de la socket de RDV IPv4/TCP
+                descSockData = socket(AF_INET, SOCK_STREAM, 0);
+                if (descSockData == -1)
+                {
+                    perror("Erreur création socket RDV\n");
+                    exit(2);
+                }
+
                 memset(&hints, 0, sizeof hints);
                 hints.ai_flags = AI_PASSIVE;     // mode serveur, nous allons utiliser la fonction bind
                 hints.ai_family = AF_INET;
