@@ -8,7 +8,7 @@
 #include "./simpleSocketAPI.h"
 
 #define SERVADDR "127.0.0.1" // Définition de l'adresse IP d'écoute
-#define SERVPORT "12346"         // Définition du port d'écoute, si 0 port choisi dynamiquement
+#define SERVPORT "12346"     // Définition du port d'écoute, si 0 port choisi dynamiquement
 #define LISTENLEN 1          // Taille de la file des demandes de connexion
 #define MAXBUFFERLEN 1024    // Taille du tampon pour les échanges de données
 #define MAXHOSTLEN 64        // Taille d'un nom de machine
@@ -170,11 +170,9 @@ int main()
                 printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
                 // write(descSockServer, writebuffer, strlen(writebuffer));
 
-
                 strcpy(writebuffer, "USER ");
                 strcat(writebuffer, nomlogin);
                 strcat(writebuffer, "\r\n\0");
-
 
                 printf("---> %s", writebuffer);
                 write(descSockServer, writebuffer, strlen(writebuffer));
@@ -189,13 +187,14 @@ int main()
                 readbuffer[ecode] = '\0';
                 printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
                 write(descSockCOM, readbuffer, strlen(readbuffer));
-
-            }else if(strncmp(readbuffer, "PASS", 4) == 0){
+            }
+            else if (strncmp(readbuffer, "PASS", 4) == 0)
+            {
 
                 printf("Commande PASS reçue : PASS XXXX\n");
-                
+
                 write(descSockServer, readbuffer, strlen(readbuffer));
-                
+
                 // Echange de donneés avec le serveur
                 ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
                 if (ecode == -1)
@@ -206,10 +205,23 @@ int main()
                 readbuffer[ecode] = '\0';
                 printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
                 write(descSockCOM, readbuffer, strlen(readbuffer));
-
             }
-            else{
-                printf("Commande inconnue recue : %s", readbuffer);
+            else
+            {
+                printf("Commande reçue : %s\n", readbuffer);
+
+                write(descSockServer, readbuffer, strlen(readbuffer));
+
+                // Echange de donneés avec le serveur
+                ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
+                if (ecode == -1)
+                {
+                    perror("Problème de lecture\n");
+                    exit(3);
+                }
+                readbuffer[ecode] = '\0';
+                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+                write(descSockCOM, readbuffer, strlen(readbuffer));
             }
         }
     }
