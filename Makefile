@@ -16,9 +16,9 @@ OBJECTS = $(SOURCES:.c=.o)
 TARGET = proxy
 
 # Phony targets
-.PHONY: all clean update
+.PHONY: all clean
 
-all: update $(TARGET)
+all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o $(TARGET)
@@ -30,6 +30,6 @@ clean:
 	rm -f $(OBJECTS) $(TARGET)
 
 update:
-	git pull && make
+	git pull
 
 .PHONY: update
