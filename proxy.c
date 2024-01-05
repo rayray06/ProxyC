@@ -289,8 +289,8 @@ int main()
                     exit(3);
                 }
 
-                readbuffer[ecode] = '\0';
-                printf("MESSAGE RECU DU SERVEUR DATA: %s\n|", readbuffer);
+                strcpy(readbuffer, "\r\n\0");
+                printf("MESSAGE RECU DU SERVEUR DATA: %s", readbuffer);
                 write(descSockData, readbuffer, strlen(readbuffer));
 
                 // Optionally, read any additional response from the server
@@ -300,14 +300,14 @@ int main()
                     perror("Problème de lecture\n");
                     exit(3);
                 }
-                readbuffer[ecode] = '\0';
+                // readbuffer[ecode] = '\0';
                 
-                printf("MESSAGE RECU DU SERVEUR: %s |\n", readbuffer);
                 strcpy(writebuffer, readbuffer);
-                strcpy(writebuffer, "\r\n\0");
+                strcat(writebuffer, "\r\n\0");
+                printf("MESSAGE RECU DU SERVEUR: %s", writebuffer);
 
                 // Send the additional response to the client on the control connection
-                write(descSockCOM, readbuffer, strlen(readbuffer));
+                write(descSockCOM, writebuffer, strlen(writebuffer));
             }
             else
             {
