@@ -22,9 +22,9 @@ int main()
     char serverPort[MAXPORTLEN];    // Port du server
     int descSockRDV;                // Descripteur de socket de rendez-vous
     int descSockCOM;                // Descripteur de socket de communication
-    int descSockData;                // Descripteur de socket de communication
+    int descSockData;               // Descripteur de socket de communication
     int descSockServer;             // Descripteur de la socket utiliser en tant que client
-    int descSockServerData;             // Descripteur de la socket utiliser en tant que client
+    int descSockServerData;         // Descripteur de la socket utiliser en tant que client
     struct addrinfo hints;          // Contrôle la fonction getaddrinfo
     struct addrinfo *res;           // Contient le résultat de la fonction getaddrinfo
     struct sockaddr_storage myinfo; // Informations sur la connexion de RDV
@@ -214,7 +214,7 @@ int main()
 
                 int add1, add2, add3, add4, port1, port2;
                 char ip_address[INET_ADDRSTRLEN];
-                char port_str[6]; 
+                char port_str[6];
 
                 // Use proper format specifiers for integers in sscanf
                 sscanf(readbuffer, "PORT %d,%d,%d,%d,%d,%d", &add1, &add2, &add3, &add4, &port1, &port2);
@@ -223,7 +223,6 @@ int main()
                 snprintf(port_str, sizeof(port_str), "%d", (port1 << 8) + port2);
 
                 connect2Server(ip_address, port_str, &descSockData);
-
 
                 strcpy(writebuffer, "PASV");
                 strcat(writebuffer, "\r\n\0");
@@ -253,12 +252,15 @@ int main()
                 strcat(writebuffer, "\r\n\0");
 
                 write(descSockCOM, writebuffer, strlen(writebuffer));
-            } else if (strncmp(readbuffer, "LIST", 4) == 0){
-                printf("Commande LIST reçue : %s\n",readbuffer);
+            }
+            else if (strncmp(readbuffer, "LIST", 4) == 0)
+            {
+                printf("Commande LIST reçue : %s\n", readbuffer);
 
+                // Send the LIST command to the server
                 write(descSockServer, readbuffer, strlen(readbuffer));
 
-                // Echange de donneés avec le serveur
+                // Read the response from the server
                 ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
                 if (ecode == -1)
                 {
@@ -267,20 +269,24 @@ int main()
                 }
                 readbuffer[ecode] = '\0';
                 printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+
+                // Send the response to the client on the control connection
                 write(descSockCOM, readbuffer, strlen(readbuffer));
-                
-                // Echange de donneés avec le serveur
-                ecode = read(descSockServerData, readbuffer, MAXBUFFERLEN);
+
+                // Now, handle the data flow from the data connection (descSockServerData)
+                while ((ecode = read(descSockServerData, readbuffer, MAXBUFFERLEN)) > 0)
+                {
+                    // Process the data as needed, you might want to send it to descSockCOM
+                    write(descSockCOM, readbuffer, ecode);
+                }
+
                 if (ecode == -1)
                 {
-                    perror("Problème de lecture\n");
+                    perror("Problème de lecture depuis la connexion de données\n");
                     exit(3);
                 }
-                readbuffer[ecode] = '\0';
-                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
-                write(descSockData, readbuffer, strlen(readbuffer));
 
-                // Echange de donneés avec le serveur
+                // Optionally, read any additional response from the server
                 ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
                 if (ecode == -1)
                 {
@@ -289,8 +295,9 @@ int main()
                 }
                 readbuffer[ecode] = '\0';
                 printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
-                write(descSockCOM, readbuffer, strlen(readbuffer));
 
+                // Send the additional response to the client on the control connection
+                write(descSockCOM, readbuffer, strlen(readbuffer));
             }
             else
             {
