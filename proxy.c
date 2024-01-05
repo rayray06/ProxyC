@@ -293,7 +293,9 @@ int main()
                     perror("Problème de lecture\n");
                     exit(3);
                 }
-                readbuffer[ecode] = '\0';
+                readbuffer[ecode] = '\r';
+                readbuffer[ecode+1] = '\n';
+                readbuffer[ecode+2] = '\0';
                 printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
 
                 // Send the additional response to the client on the control connection
