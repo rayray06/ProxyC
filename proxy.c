@@ -277,7 +277,7 @@ int main()
                 while ((ecode = read(descSockServerData, readbuffer, MAXBUFFERLEN)) > 0)
                 {
                     // Process the data as needed, you might want to send it to descSockCOM
-                    write(descSockCOM, readbuffer, ecode);
+                    write(descSockData, readbuffer, ecode);
                 }
 
                 if (ecode == -1)
