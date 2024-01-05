@@ -189,9 +189,24 @@ int main()
                 readbuffer[ecode] = '\0';
                 printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
                 write(descSockCOM, readbuffer, strlen(readbuffer));
+
             }else if(strncmp(readbuffer, "PASS", 4) == 0){
-                printf("Commande PASS reçue : %s\n", readbuffer);
+
+                printf("Commande PASS reçue : PASS XXXX\n");
+                
                 write(descSockServer, readbuffer, strlen(readbuffer));
+                
+                // Echange de donneés avec le serveur
+                ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
+                if (ecode == -1)
+                {
+                    perror("Problème de lecture\n");
+                    exit(3);
+                }
+                readbuffer[ecode] = '\0';
+                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+                write(descSockCOM, readbuffer, strlen(readbuffer));
+
             }
             else{
                 printf("Commande inconnue recue : %s", readbuffer);
