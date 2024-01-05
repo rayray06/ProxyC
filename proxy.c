@@ -22,7 +22,7 @@ int main()
     char serverPort[MAXPORTLEN];    // Port du server
     int descSockRDV;                // Descripteur de socket de rendez-vous
     int descSockCOM;                // Descripteur de socket de communication
-    int descSockClient;             // Descripteur de la socket utiliser en tant que client
+    int descSockServer;             // Descripteur de la socket utiliser en tant que client
     struct addrinfo hints;          // Contrôle la fonction getaddrinfo
     struct addrinfo *res;           // Contient le résultat de la fonction getaddrinfo
     struct sockaddr_storage myinfo; // Informations sur la connexion de RDV
@@ -152,7 +152,7 @@ int main()
                 sscanf(readbuffer, "USER %[^@]@%s", nomlogin, nomserveur);
                 printf("Nom d'utilisateur : %s, Nom du serveur : %s\n", nomlogin, nomserveur);
 
-                int newres = connect2Server(nomserveur, "21", &descSockClient);
+                int newres = connect2Server(nomserveur, "21", &descSockServer);
                 if (newres == -1)
                 {
                     printf("Le serveur a fermé la connexion\n");
@@ -160,7 +160,7 @@ int main()
                 }
 
                 // Echange de donneés avec le serveur
-                ecode = read(descSockClient, readbuffer, MAXBUFFERLEN);
+                ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
                 if (ecode == -1)
                 {
                     perror("Problème de lecture\n");
@@ -168,7 +168,7 @@ int main()
                 }
                 readbuffer[ecode] = '\0';
                 printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
-                // write(descSockCOM, writebuffer, strlen(writebuffer));
+                // write(descSockServer, writebuffer, strlen(writebuffer));
 
 
                 strcpy(writebuffer, "USER ");
@@ -177,10 +177,10 @@ int main()
 
 
                 printf("---> %s", writebuffer);
-                write(descSockClient, writebuffer, strlen(writebuffer));
+                write(descSockServer, writebuffer, strlen(writebuffer));
 
                 // Echange de donneés avec le serveur
-                ecode = read(descSockClient, readbuffer, MAXBUFFERLEN);
+                ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
                 if (ecode == -1)
                 {
                     perror("Problème de lecture\n");
@@ -188,6 +188,7 @@ int main()
                 }
                 readbuffer[ecode] = '\0';
                 printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+                write(descSockCOM, readbuffer, strlen(readbuffer));
 
             }else{
                 printf("Commande inconnue recue : %s", readbuffer);
