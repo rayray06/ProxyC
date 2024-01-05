@@ -8,7 +8,7 @@
 #include "./simpleSocketAPI.h"
 
 #define SERVADDR "127.0.0.1" // Définition de l'adresse IP d'écoute
-#define SERVPORT "0"         // Définition du port d'écoute, si 0 port choisi dynamiquement
+#define SERVPORT "12346"         // Définition du port d'écoute, si 0 port choisi dynamiquement
 #define LISTENLEN 1          // Taille de la file des demandes de connexion
 #define MAXBUFFERLEN 1024    // Taille du tampon pour les échanges de données
 #define MAXHOSTLEN 64        // Taille d'un nom de machine
@@ -106,7 +106,7 @@ int main()
     /*****
      * Testez de mettre 220 devant BLABLABLA ...
      * **/
-    strcpy(writebuffer, "220 BLABLABLA\n");
+    strcpy(writebuffer, "220 Connexion au proxy\n");
     write(descSockCOM, writebuffer, strlen(writebuffer));
 
     /*******
@@ -146,34 +146,46 @@ int main()
             if (strncmp(readbuffer, "USER", 4) == 0)
             {
                 printf("Commande USER reçue : %s\n", readbuffer);
-            }
-            char nomlogin[MAXBUFFERLEN];
-            char nomserveur[MAXBUFFERLEN];
+                char nomlogin[MAXBUFFERLEN];
+                char nomserveur[MAXBUFFERLEN];
 
-            sscanf(readbuffer, "USER %[^@]@%s", nomlogin, nomserveur);
-            printf("Nom d'utilisateur : %s, Nom du serveur : %s\n", nomlogin, nomserveur);
+                sscanf(readbuffer, "USER %[^@]@%s", nomlogin, nomserveur);
+                printf("Nom d'utilisateur : %s, Nom du serveur : %s\n", nomlogin, nomserveur);
 
-            int newres = connect2Server(nomserveur, "12345", &descSockClient);
-            if (newres == -1)
-            {
-                printf("Le serveur a fermé la connexion\n");
-                etatconnecter = false; // Mettre fin à la boucle si le client ferme la connexion
-            }
+                int newres = connect2Server(nomserveur, "21", &descSockClient);
+                if (newres == -1)
+                {
+                    printf("Le serveur a fermé la connexion\n");
+                    etatconnecter = false; // Mettre fin à la boucle si le client ferme la connexion
+                }
 
-            // Echange de donneés avec le serveur
-            ecode = read(descSockClient, readbuffer, MAXBUFFERLEN);
-            if (ecode == -1)
-            {
-                perror("Problème de lecture\n");
-                exit(3);
-            }
-            readbuffer[ecode] = '\0';
-            printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+                // Echange de donneés avec le serveur
+                ecode = read(descSockClient, readbuffer, MAXBUFFERLEN);
+                if (ecode == -1)
+                {
+                    perror("Problème de lecture\n");
+                    exit(3);
+                }
+                readbuffer[ecode] = '\0';
+                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
 
-            strcpy(writebuffer, "MESSAGE RECU DU SERVEUR: ");
-            strcat(writebuffer, readbuffer);
+                strcpy(writebuffer, "USER ");
+                strcat(writebuffer, nomlogin);
+                strcat(writebuffer, "\n\0");
 
-            write(descSockCOM, writebuffer, strlen(writebuffer));
+                write(descSockClient, writebuffer, strlen(writebuffer));
+
+                // Echange de donneés avec le serveur
+                ecode = read(descSockClient, readbuffer, MAXBUFFERLEN);
+                if (ecode == -1)
+                {
+                    perror("Problème de lecture\n");
+                    exit(3);
+                }
+                readbuffer[ecode] = '\0';
+                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+
+            }else if(strncmp(readbuffer, "USER", 4) == 0)
         }
     }
 
