@@ -276,7 +276,8 @@ int main()
                 // Now, handle the data flow from the data connection (descSockServerData)
                 while ((ecode = read(descSockServer, readbuffer, MAXBUFFERLEN)) == 0)
                 {
-                    ecode = read(descSockServerData, readbuffer, MAXBUFFERLEN) if (ecode == -1)
+                    ecode = read(descSockServerData, readbuffer, MAXBUFFERLEN);
+                    if (ecode == -1)
                     {
                         perror("Problème de lecture depuis la connexion de données\n");
                         exit(3);
