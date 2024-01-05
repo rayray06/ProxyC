@@ -7,7 +7,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -g
 
 # Source files
-SOURCES = proxy.c simpleAPIsocket.c
+SOURCES = proxy.c simpleSocketAPI.c
 
 # Object files
 OBJECTS = $(SOURCES:.c=.o)
