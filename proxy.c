@@ -280,9 +280,6 @@ int main()
                     write(descSockData, readbuffer, ecode);
                 }
 
-                strcpy(writebuffer, "\r\n\0");
-                write(descSockData, writebuffer, strlen(writebuffer));
-
                 if (ecode == -1)
                 {
                     perror("Problème de lecture depuis la connexion de données\n");
@@ -296,14 +293,11 @@ int main()
                     perror("Problème de lecture\n");
                     exit(3);
                 }
-
+                readbuffer[ecode] = '\0';
                 printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
 
                 // Send the additional response to the client on the control connection
-                write(descSockCOM, readbuffer, ecode);
-
-                strcpy(writebuffer, "\r\n\0");
-                write(descSockCOM, writebuffer, strlen(writebuffer));
+                write(descSockCOM, readbuffer, strlen(readbuffer));
             }
             else
             {
