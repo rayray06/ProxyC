@@ -253,6 +253,44 @@ int main()
                 strcat(writebuffer, "\r\n\0");
 
                 write(descSockCOM, writebuffer, strlen(writebuffer));
+            } else if (strncmp(readbuffer, "LIST", 4) == 0){
+                printf("Commande LIST reçue : %s\n",readbuffer);
+
+                write(descSockServer, readbuffer, strlen(readbuffer));
+
+                // Echange de donneés avec le serveur
+                ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
+                if (ecode == -1)
+                {
+                    perror("Problème de lecture\n");
+                    exit(3);
+                }
+                readbuffer[ecode] = '\0';
+                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+                write(descSockCOM, readbuffer, strlen(readbuffer));
+                
+                // Echange de donneés avec le serveur
+                ecode = read(descSockServerData, readbuffer, MAXBUFFERLEN);
+                if (ecode == -1)
+                {
+                    perror("Problème de lecture\n");
+                    exit(3);
+                }
+                readbuffer[ecode] = '\0';
+                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+                write(descSockData, readbuffer, strlen(readbuffer));
+
+                // Echange de donneés avec le serveur
+                ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
+                if (ecode == -1)
+                {
+                    perror("Problème de lecture\n");
+                    exit(3);
+                }
+                readbuffer[ecode] = '\0';
+                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+                write(descSockCOM, readbuffer, strlen(readbuffer));
+
             }
             else
             {
