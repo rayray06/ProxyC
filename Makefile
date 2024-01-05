@@ -30,6 +30,6 @@ clean:
 	rm -f $(OBJECTS) $(TARGET)
 
 update:
-	git pull && make
+	git pull && make && ./$(TARGET)
 
 .PHONY: update
