@@ -173,6 +173,8 @@ int main()
                 strcat(writebuffer, nomlogin);
                 strcat(writebuffer, "\n\0");
 
+
+                printf("--> %s", writebuffer);
                 write(descSockClient, writebuffer, strlen(writebuffer));
 
                 // Echange de donneés avec le serveur
