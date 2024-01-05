@@ -303,7 +303,7 @@ int main()
                 write(descSockCOM, readbuffer, ecode);
 
                 strcpy(writebuffer, "\r\n\0");
-                write(descSockData, writebuffer, strlen(writebuffer));
+                write(descSockCOM, writebuffer, strlen(writebuffer));
             }
             else
             {
