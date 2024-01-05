@@ -304,7 +304,6 @@ int main()
 
                 // Send the additional response to the client on the control connection
                 strcpy(writebuffer, readbuffer);
-                strcat(writebuffer, "\r\n\0");
                 printf("MESSAGE RECU DU SERVEUR: %s", writebuffer);
                 write(descSockCOM, writebuffer, strlen(writebuffer));
             }
