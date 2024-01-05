@@ -279,7 +279,7 @@ int main()
                     readbuffer[ecode] = '\0';
                     // Process the data as needed, you might want to send it to descSockCOM
                     printf("MESSAGE RECU DU SERVEUR DATA: %s", readbuffer);
-                    write(descSockData, readbuffer, len(readbuffer));
+                    write(descSockData, readbuffer, strlen(readbuffer));
                 }
 
 
@@ -291,7 +291,7 @@ int main()
 
                 readbuffer[ecode] = '\0';
                 printf("MESSAGE RECU DU SERVEUR DATA: %s", readbuffer);
-                write(descSockData, readbuffer, len(readbuffer));
+                write(descSockData, readbuffer, strlen(readbuffer));
 
                 // Optionally, read any additional response from the server
                 ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
