@@ -253,88 +253,86 @@ int main()
 
                 write(descSockCOM, writebuffer, strlen(writebuffer));
             }
-        }
-        else if (strncmp(readbuffer, "LIST", 4) == 0)
-        {
-            printf("Commande LIST reçue : %s\n", readbuffer);
-
-            // Send the LIST command to the server
-            write(descSockServer, readbuffer, strlen(readbuffer));
-
-            // Read the response from the server
-            ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
-            if (ecode == -1)
+            else if (strncmp(readbuffer, "LIST", 4) == 0)
             {
-                perror("Problème de lecture\n");
-                exit(3);
-            }
-            readbuffer[ecode] = '\0';
-            printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+                printf("Commande LIST reçue : %s\n", readbuffer);
 
-            // Send the response to the client on the control connection
-            write(descSockCOM, readbuffer, strlen(readbuffer));
+                // Send the LIST command to the server
+                write(descSockServer, readbuffer, strlen(readbuffer));
 
-            // Handle the data flow from the data connection (descSockServerData)
-            while ((ecode = read(descSockServerData, readbuffer, MAXBUFFERLEN)) > 0)
-            {
-                // Process the data as needed, you might want to send it to descSockCOM
+                // Read the response from the server
+                ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
+                if (ecode == -1)
+                {
+                    perror("Problème de lecture\n");
+                    exit(3);
+                }
                 readbuffer[ecode] = '\0';
-                printf("MESSAGE RECU DU SERVEUR DATA: %s\n|", readbuffer);
+                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+
+                // Send the response to the client on the control connection
+                write(descSockCOM, readbuffer, strlen(readbuffer));
+
+                // Handle the data flow from the data connection (descSockServerData)
+                while ((ecode = read(descSockServerData, readbuffer, MAXBUFFERLEN)) > 0)
+                {
+                    // Process the data as needed, you might want to send it to descSockCOM
+                    readbuffer[ecode] = '\0';
+                    printf("MESSAGE RECU DU SERVEUR DATA: %s\n|", readbuffer);
+                    write(descSockData, readbuffer, strlen(readbuffer));
+                }
+
+                if (ecode == -1)
+                {
+                    perror("Problème de lecture depuis la connexion de données\n");
+                    exit(3);
+                }
+
+                // Send an additional CRLF to signify the end of data transmission on descSockData
+                strcpy(readbuffer, "\r\n\0");
+                printf("MESSAGE RECU DU SERVEUR DATA: %s", readbuffer);
                 write(descSockData, readbuffer, strlen(readbuffer));
-            }
 
-            if (ecode == -1)
+                // Optionally, read any additional response from the server
+                ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
+                if (ecode == -1)
+                {
+                    perror("Problème de lecture\n");
+                    exit(3);
+                }
+                readbuffer[ecode] = '\0';
+
+                // Send the additional response to the client on the control connection
+                strcpy(writebuffer, readbuffer);
+                strcat(writebuffer, "\r\n\0");
+                printf("MESSAGE RECU DU SERVEUR: %s", writebuffer);
+                write(descSockCOM, writebuffer, strlen(writebuffer));
+            }
+            else
             {
-                perror("Problème de lecture depuis la connexion de données\n");
-                exit(3);
+                printf("Commande reçue : %s\n", readbuffer);
+
+                write(descSockServer, readbuffer, strlen(readbuffer));
+
+                // Echange de donneés avec le serveur
+                ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
+                if (ecode == -1)
+                {
+                    perror("Problème de lecture\n");
+                    exit(3);
+                }
+                readbuffer[ecode] = '\0';
+                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+                write(descSockCOM, readbuffer, strlen(readbuffer));
             }
-
-            // Send an additional CRLF to signify the end of data transmission on descSockData
-            strcpy(readbuffer, "\r\n\0");
-            printf("MESSAGE RECU DU SERVEUR DATA: %s", readbuffer);
-            write(descSockData, readbuffer, strlen(readbuffer));
-
-            // Optionally, read any additional response from the server
-            ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
-            if (ecode == -1)
-            {
-                perror("Problème de lecture\n");
-                exit(3);
-            }
-            readbuffer[ecode] = '\0';
-
-            // Send the additional response to the client on the control connection
-            strcpy(writebuffer, readbuffer);
-            strcat(writebuffer, "\r\n\0");
-            printf("MESSAGE RECU DU SERVEUR: %s", writebuffer);
-            write(descSockCOM, writebuffer, strlen(writebuffer));
-        }
-
-        else
-        {
-            printf("Commande reçue : %s\n", readbuffer);
-
-            write(descSockServer, readbuffer, strlen(readbuffer));
-
-            // Echange de donneés avec le serveur
-            ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
-            if (ecode == -1)
-            {
-                perror("Problème de lecture\n");
-                exit(3);
-            }
-            readbuffer[ecode] = '\0';
-            printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
-            write(descSockCOM, readbuffer, strlen(readbuffer));
         }
     }
-}
 
-// serveur www.debian.org/CD/http-ftp/#mirrors
-//  login : anonymous
-//  mdp:toto@tata.com
+    // serveur www.debian.org/CD/http-ftp/#mirrors
+    //  login : anonymous
+    //  mdp:toto@tata.com
 
-// Fermeture de la connexion
-close(descSockCOM);
-close(descSockRDV);
+    // Fermeture de la connexion
+    close(descSockCOM);
+    close(descSockRDV);
 }
