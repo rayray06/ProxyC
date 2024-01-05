@@ -300,7 +300,7 @@ int main()
                     perror("Problème de lecture\n");
                     exit(3);
                 }
-                // readbuffer[ecode] = '\0';
+                readbuffer[ecode] = '\0';
                 
                 strcpy(writebuffer, readbuffer);
                 strcat(writebuffer, "\r\n\0");
