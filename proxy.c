@@ -222,7 +222,7 @@ int main()
                 snprintf(ip_address, sizeof(ip_address), "%d.%d.%d.%d", add1, add2, add3, add4);
                 snprintf(port_str, sizeof(port_str), "%d", (port1 << 8) + port2);
 
-                connect2Server(nomsip_addresserveur, port_str, &descSockData);
+                connect2Server(ip_address, port_str, &descSockData);
 
 
                 strcpy(writebuffer, "PASV");
@@ -247,7 +247,7 @@ int main()
                 snprintf(ip_address, sizeof(ip_address), "%d.%d.%d.%d", add1, add2, add3, add4);
                 snprintf(port_str, sizeof(port_str), "%d", (port1 << 8) + port2);
 
-                connect2Server(nomsip_addresserveur, port_str, &descSockServerData);
+                connect2Server(ip_address, port_str, &descSockServerData);
 
                 strcpy(writebuffer, "200 PORT command successful");
                 strcat(writebuffer, "\r\n\0");
