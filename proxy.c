@@ -108,7 +108,7 @@ int main()
      *
      * *****/
     while(true){
-        
+
         // Attente connexion du client
         // Lorsque demande de connexion, creation d'une socket de communication avec le client
         descSockCOM = accept(descSockRDV, (struct sockaddr *)&from, &len);
@@ -331,8 +331,8 @@ int main()
                     printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
                     write(descSockCOM, readbuffer, strlen(readbuffer));
 
-                    close(descSockServer)
-                    close(descSockCOM)
+                    close(descSockServer);
+                    close(descSockCOM);
                     etatconnecter = false;
                 }
                 else
