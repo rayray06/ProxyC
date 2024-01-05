@@ -95,21 +95,6 @@ int main()
     }
 
     len = sizeof(struct sockaddr_storage);
-    // Attente connexion du client
-    // Lorsque demande de connexion, creation d'une socket de communication avec le client
-    descSockCOM = accept(descSockRDV, (struct sockaddr *)&from, &len);
-    if (descSockCOM == -1)
-    {
-        perror("Erreur accept\n");
-        exit(6);
-    }
-    // Echange de données avec le client connecté
-
-    /*****
-     * Testez de mettre 220 devant BLABLABLA ...
-     * **/
-    strcpy(writebuffer, "220 Connexion au proxy\n");
-    write(descSockCOM, writebuffer, strlen(writebuffer));
 
     /*******
      *
@@ -122,212 +107,251 @@ int main()
      * Recevoir la commande  USER nomlogin@nomserveur
      *
      * *****/
-    ssize_t n;
-    bool etatconnecter = true; // Variable pour voir l'état de la connexion client
-
-    // boucle pour lire les données envoyées par le client tant qu'il est connecté
-    // cette boucle est nessesaire pour traité les information lors de sa connection
-    while (etatconnecter)
-    {
-        n = read(descSockCOM, readbuffer, MAXBUFFERLEN - 1);
-
-        if (n == -1)
+    while(true){
+        
+        // Attente connexion du client
+        // Lorsque demande de connexion, creation d'une socket de communication avec le client
+        descSockCOM = accept(descSockRDV, (struct sockaddr *)&from, &len);
+        if (descSockCOM == -1)
         {
-            perror("Erreur de lecture du socket client");
-            etatconnecter = false; // deconexion de la boucle si il y a un probleme
+            perror("Erreur accept\n");
+            exit(6);
         }
-        else if (n == 0)
+        // Echange de données avec le client connecté
+
+        /*****
+         * Testez de mettre 220 devant BLABLABLA ...
+         * **/
+        strcpy(writebuffer, "220 Connexion au proxy\n");
+        write(descSockCOM, writebuffer, strlen(writebuffer));
+    
+        ssize_t n;
+        bool etatconnecter = true; // Variable pour voir l'état de la connexion client
+
+        // boucle pour lire les données envoyées par le client tant qu'il est connecté
+        // cette boucle est nessesaire pour traité les information lors de sa connection
+        while (etatconnecter)
         {
-            printf("Le client a fermé la connexion\n");
-            etatconnecter = false; // Mettre fin à la boucle si le client ferme la connexion
-        }
-        else
-        {
-            readbuffer[n] = '\0';
+            n = read(descSockCOM, readbuffer, MAXBUFFERLEN - 1);
 
-            if (strncmp(readbuffer, "USER", 4) == 0)
+            if (n == -1)
             {
-                printf("Commande USER reçue : %s\n", readbuffer);
-                char nomlogin[MAXBUFFERLEN];
-                char nomserveur[MAXBUFFERLEN];
-
-                sscanf(readbuffer, "USER %[^@]@%s", nomlogin, nomserveur);
-                printf("Nom d'utilisateur : %s, Nom du serveur : %s\n", nomlogin, nomserveur);
-
-                int newres = connect2Server(nomserveur, "21", &descSockServer);
-                if (newres == -1)
-                {
-                    printf("Le serveur a fermé la connexion\n");
-                    etatconnecter = false; // Mettre fin à la boucle si le client ferme la connexion
-                }
-
-                // Echange de donneés avec le serveur
-                ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
-                if (ecode == -1)
-                {
-                    perror("Problème de lecture\n");
-                    exit(3);
-                }
-                readbuffer[ecode] = '\0';
-                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
-                // write(descSockServer, writebuffer, strlen(writebuffer));
-
-                strcpy(writebuffer, "USER ");
-                strcat(writebuffer, nomlogin);
-                strcat(writebuffer, "\r\n\0");
-
-                printf("---> %s", writebuffer);
-                write(descSockServer, writebuffer, strlen(writebuffer));
-
-                // Echange de donneés avec le serveur
-                ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
-                if (ecode == -1)
-                {
-                    perror("Problème de lecture\n");
-                    exit(3);
-                }
-                readbuffer[ecode] = '\0';
-                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
-                write(descSockCOM, readbuffer, strlen(readbuffer));
+                perror("Erreur de lecture du socket client");
+                etatconnecter = false; // deconexion de la boucle si il y a un probleme
             }
-            else if (strncmp(readbuffer, "PASS", 4) == 0)
+            else if (n == 0)
             {
-
-                printf("Commande PASS reçue : PASS XXXX\n");
-
-                write(descSockServer, readbuffer, strlen(readbuffer));
-
-                // Echange de donneés avec le serveur
-                ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
-                if (ecode == -1)
-                {
-                    perror("Problème de lecture\n");
-                    exit(3);
-                }
-                readbuffer[ecode] = '\0';
-                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
-                write(descSockCOM, readbuffer, strlen(readbuffer));
-            }
-            else if (strncmp(readbuffer, "PORT", 4) == 0)
-            {
-                printf("Commande PORT reçue : %s\n", readbuffer);
-
-                int add1, add2, add3, add4, port1, port2;
-                char ip_address[INET_ADDRSTRLEN];
-                char port_str[6];
-
-                // Use proper format specifiers for integers in sscanf
-                sscanf(readbuffer, "PORT %d,%d,%d,%d,%d,%d", &add1, &add2, &add3, &add4, &port1, &port2);
-
-                snprintf(ip_address, sizeof(ip_address), "%d.%d.%d.%d", add1, add2, add3, add4);
-                snprintf(port_str, sizeof(port_str), "%d", (port1 << 8) + port2);
-
-                connect2Server(ip_address, port_str, &descSockData);
-
-                strcpy(writebuffer, "PASV");
-                strcat(writebuffer, "\r\n\0");
-
-                printf("---> %s", writebuffer);
-                write(descSockServer, writebuffer, strlen(writebuffer));
-
-                // Echange de donneés avec le serveur
-                ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
-                if (ecode == -1)
-                {
-                    perror("Problème de lecture\n");
-                    exit(3);
-                }
-                readbuffer[ecode] = '\0';
-                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
-
-                // Use proper format specifiers for integers in sscanf
-                sscanf(readbuffer, "227 Entering Passive Mode (%d,%d,%d,%d,%d,%d)", &add1, &add2, &add3, &add4, &port1, &port2);
-
-                snprintf(ip_address, sizeof(ip_address), "%d.%d.%d.%d", add1, add2, add3, add4);
-                snprintf(port_str, sizeof(port_str), "%d", (port1 << 8) + port2);
-
-                connect2Server(ip_address, port_str, &descSockServerData);
-
-                strcpy(writebuffer, "200 PORT command successful");
-                strcat(writebuffer, "\r\n\0");
-
-                write(descSockCOM, writebuffer, strlen(writebuffer));
-            }
-            else if (strncmp(readbuffer, "LIST", 4) == 0)
-            {
-                printf("Commande LIST reçue : %s\n", readbuffer);
-
-                // Send the LIST command to the server
-                write(descSockServer, readbuffer, strlen(readbuffer));
-
-                // Read the response from the server
-                ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
-                if (ecode == -1)
-                {
-                    perror("Problème de lecture\n");
-                    exit(3);
-                }
-                readbuffer[ecode] = '\0';
-                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
-
-                // Send the response to the client on the control connection
-                write(descSockCOM, readbuffer, strlen(readbuffer));
-
-                // Handle the data flow from the data connection (descSockServerData)
-                while ((ecode = read(descSockServerData, readbuffer, MAXBUFFERLEN)) > 0)
-                {
-                    // Process the data as needed, you might want to send it to descSockCOM
-                    readbuffer[ecode] = '\0';
-                    printf("MESSAGE RECU DU SERVEUR DATA: %s\n|", readbuffer);
-                    write(descSockData, readbuffer, strlen(readbuffer));
-                }
-
-                if (ecode == -1)
-                {
-                    perror("Problème de lecture depuis la connexion de données\n");
-                    exit(3);
-                }
-
-                // Send an additional CRLF to signify the end of data transmission on descSockData
-                strcpy(readbuffer, "\r\n\0");
-                printf("MESSAGE RECU DU SERVEUR DATA: %s", readbuffer);
-                write(descSockData, readbuffer, strlen(readbuffer));
-
-
-                close(descSockServerData);
-                close(descSockData);
-
-
-                // Optionally, read any additional response from the server
-                ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
-                if (ecode == -1)
-                {
-                    perror("Problème de lecture\n");
-                    exit(3);
-                }
-                readbuffer[ecode] = '\0';
-
-                // Send the additional response to the client on the control connection
-                strcpy(writebuffer, readbuffer);
-                printf("MESSAGE RECU DU SERVEUR: %s", writebuffer);
-                write(descSockCOM, writebuffer, strlen(writebuffer));
+                printf("Le client a fermé la connexion\n");
+                etatconnecter = false; // Mettre fin à la boucle si le client ferme la connexion
             }
             else
             {
-                printf("Commande reçue : %s\n", readbuffer);
+                readbuffer[n] = '\0';
 
-                write(descSockServer, readbuffer, strlen(readbuffer));
-
-                // Echange de donneés avec le serveur
-                ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
-                if (ecode == -1)
+                if (strncmp(readbuffer, "USER", 4) == 0)
                 {
-                    perror("Problème de lecture\n");
-                    exit(3);
+                    printf("Commande USER reçue : %s\n", readbuffer);
+                    char nomlogin[MAXBUFFERLEN];
+                    char nomserveur[MAXBUFFERLEN];
+
+                    sscanf(readbuffer, "USER %[^@]@%s", nomlogin, nomserveur);
+                    printf("Nom d'utilisateur : %s, Nom du serveur : %s\n", nomlogin, nomserveur);
+
+                    int newres = connect2Server(nomserveur, "21", &descSockServer);
+                    if (newres == -1)
+                    {
+                        printf("Le serveur a fermé la connexion\n");
+                        etatconnecter = false; // Mettre fin à la boucle si le client ferme la connexion
+                    }
+
+                    // Echange de donneés avec le serveur
+                    ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
+                    if (ecode == -1)
+                    {
+                        perror("Problème de lecture\n");
+                        exit(3);
+                    }
+                    readbuffer[ecode] = '\0';
+                    printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+                    // write(descSockServer, writebuffer, strlen(writebuffer));
+
+                    strcpy(writebuffer, "USER ");
+                    strcat(writebuffer, nomlogin);
+                    strcat(writebuffer, "\r\n\0");
+
+                    printf("---> %s", writebuffer);
+                    write(descSockServer, writebuffer, strlen(writebuffer));
+
+                    // Echange de donneés avec le serveur
+                    ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
+                    if (ecode == -1)
+                    {
+                        perror("Problème de lecture\n");
+                        exit(3);
+                    }
+                    readbuffer[ecode] = '\0';
+                    printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+                    write(descSockCOM, readbuffer, strlen(readbuffer));
                 }
-                readbuffer[ecode] = '\0';
-                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
-                write(descSockCOM, readbuffer, strlen(readbuffer));
+                else if (strncmp(readbuffer, "PASS", 4) == 0)
+                {
+
+                    printf("Commande PASS reçue : PASS XXXX\n");
+
+                    write(descSockServer, readbuffer, strlen(readbuffer));
+
+                    // Echange de donneés avec le serveur
+                    ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
+                    if (ecode == -1)
+                    {
+                        perror("Problème de lecture\n");
+                        exit(3);
+                    }
+                    readbuffer[ecode] = '\0';
+                    printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+                    write(descSockCOM, readbuffer, strlen(readbuffer));
+                }
+                else if (strncmp(readbuffer, "PORT", 4) == 0)
+                {
+                    printf("Commande PORT reçue : %s\n", readbuffer);
+
+                    int add1, add2, add3, add4, port1, port2;
+                    char ip_address[INET_ADDRSTRLEN];
+                    char port_str[6];
+
+                    // Use proper format specifiers for integers in sscanf
+                    sscanf(readbuffer, "PORT %d,%d,%d,%d,%d,%d", &add1, &add2, &add3, &add4, &port1, &port2);
+
+                    snprintf(ip_address, sizeof(ip_address), "%d.%d.%d.%d", add1, add2, add3, add4);
+                    snprintf(port_str, sizeof(port_str), "%d", (port1 << 8) + port2);
+
+                    connect2Server(ip_address, port_str, &descSockData);
+
+                    strcpy(writebuffer, "PASV");
+                    strcat(writebuffer, "\r\n\0");
+
+                    printf("---> %s", writebuffer);
+                    write(descSockServer, writebuffer, strlen(writebuffer));
+
+                    // Echange de donneés avec le serveur
+                    ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
+                    if (ecode == -1)
+                    {
+                        perror("Problème de lecture\n");
+                        exit(3);
+                    }
+                    readbuffer[ecode] = '\0';
+                    printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+
+                    // Use proper format specifiers for integers in sscanf
+                    sscanf(readbuffer, "227 Entering Passive Mode (%d,%d,%d,%d,%d,%d)", &add1, &add2, &add3, &add4, &port1, &port2);
+
+                    snprintf(ip_address, sizeof(ip_address), "%d.%d.%d.%d", add1, add2, add3, add4);
+                    snprintf(port_str, sizeof(port_str), "%d", (port1 << 8) + port2);
+
+                    connect2Server(ip_address, port_str, &descSockServerData);
+
+                    strcpy(writebuffer, "200 PORT command successful");
+                    strcat(writebuffer, "\r\n\0");
+
+                    write(descSockCOM, writebuffer, strlen(writebuffer));
+                }
+                else if (strncmp(readbuffer, "LIST", 4) == 0)
+                {
+                    printf("Commande LIST reçue : %s\n", readbuffer);
+
+                    // Send the LIST command to the server
+                    write(descSockServer, readbuffer, strlen(readbuffer));
+
+                    // Read the response from the server
+                    ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
+                    if (ecode == -1)
+                    {
+                        perror("Problème de lecture\n");
+                        exit(3);
+                    }
+                    readbuffer[ecode] = '\0';
+                    printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+
+                    // Send the response to the client on the control connection
+                    write(descSockCOM, readbuffer, strlen(readbuffer));
+
+                    // Handle the data flow from the data connection (descSockServerData)
+                    while ((ecode = read(descSockServerData, readbuffer, MAXBUFFERLEN)) > 0)
+                    {
+                        // Process the data as needed, you might want to send it to descSockCOM
+                        readbuffer[ecode] = '\0';
+                        printf("MESSAGE RECU DU SERVEUR DATA: %s\n|", readbuffer);
+                        write(descSockData, readbuffer, strlen(readbuffer));
+                    }
+
+                    if (ecode == -1)
+                    {
+                        perror("Problème de lecture depuis la connexion de données\n");
+                        exit(3);
+                    }
+
+                    // Send an additional CRLF to signify the end of data transmission on descSockData
+                    strcpy(readbuffer, "\r\n\0");
+                    printf("MESSAGE RECU DU SERVEUR DATA: %s", readbuffer);
+                    write(descSockData, readbuffer, strlen(readbuffer));
+
+
+                    close(descSockServerData);
+                    close(descSockData);
+
+
+                    // Optionally, read any additional response from the server
+                    ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
+                    if (ecode == -1)
+                    {
+                        perror("Problème de lecture\n");
+                        exit(3);
+                    }
+                    readbuffer[ecode] = '\0';
+
+                    // Send the additional response to the client on the control connection
+                    strcpy(writebuffer, readbuffer);
+                    printf("MESSAGE RECU DU SERVEUR: %s", writebuffer);
+                    write(descSockCOM, writebuffer, strlen(writebuffer));
+                }
+                else if (strncmp(readbuffer, "QUIT", 4) == 0){
+                    printf("Commande QUIT reçue : %s\n", readbuffer);
+
+                    write(descSockServer, readbuffer, strlen(readbuffer));
+
+                    // Echange de donneés avec le serveur
+                    ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
+                    if (ecode == -1)
+                    {
+                        perror("Problème de lecture\n");
+                        exit(3);
+                    }
+                    readbuffer[ecode] = '\0';
+                    printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+                    write(descSockCOM, readbuffer, strlen(readbuffer));
+
+                    close(descSockServer)
+                    close(descSockCOM)
+                    etatconnecter = false;
+                }
+                else
+                {
+                    printf("Commande reçue : %s\n", readbuffer);
+
+                    write(descSockServer, readbuffer, strlen(readbuffer));
+
+                    // Echange de donneés avec le serveur
+                    ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
+                    if (ecode == -1)
+                    {
+                        perror("Problème de lecture\n");
+                        exit(3);
+                    }
+                    readbuffer[ecode] = '\0';
+                    printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+                    write(descSockCOM, readbuffer, strlen(readbuffer));
+                }
             }
         }
     }
