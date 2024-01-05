@@ -293,6 +293,11 @@ int main()
                 printf("MESSAGE RECU DU SERVEUR DATA: %s", readbuffer);
                 write(descSockData, readbuffer, strlen(readbuffer));
 
+
+                close(descSockServerData);
+                close(descSockData);
+
+
                 // Optionally, read any additional response from the server
                 ecode = read(descSockServer, readbuffer, MAXBUFFERLEN);
                 if (ecode == -1)
