@@ -229,7 +229,7 @@ int main()
                 char port_str[6]; // Assuming a maximum port length of 5 digits
                 snprintf(port_str, sizeof(port_str), "%d", (port1 << 8) + port2);
 
-                ecode = getaddrinfo(ip_address, port_str, &hints, &res)
+                ecode = getaddrinfo(ip_address, port_str, &hints, &res);
                 if (ecode)
                 {
                     fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(ecode));
@@ -254,7 +254,6 @@ int main()
                 freeaddrinfo(res);
 
                 strcpy(writebuffer, "PASSV");
-                strcat(writebuffer, nomlogin);
                 strcat(writebuffer, "\r\n\0");
 
                 printf("---> %s", writebuffer);
