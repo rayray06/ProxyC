@@ -250,14 +250,7 @@ int main()
                     perror("Erreur liaison de la socket de Data");
                     exit(3);
                 }
-
-                // Publication de la socket
-                ecode = bind(descSockData, res->ai_addr, res->ai_addrlen);
-                if (ecode == -1)
-                {
-                    perror("Erreur liaison de la socket de Data");
-                    exit(3);
-                }
+                
                 // Nous n'avons plus besoin de cette liste chainée addrinfo
                 freeaddrinfo(res);
 
