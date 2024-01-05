@@ -301,7 +301,10 @@ int main()
                     exit(3);
                 }
                 readbuffer[ecode] = '\0';
+                
                 printf("MESSAGE RECU DU SERVEUR: %s |\n", readbuffer);
+                strcpy(writebuffer, readbuffer);
+                strcpy(writebuffer, "\r\n\0");
 
                 // Send the additional response to the client on the control connection
                 write(descSockCOM, readbuffer, strlen(readbuffer));
@@ -320,10 +323,8 @@ int main()
                     exit(3);
                 }
                 readbuffer[ecode] = '\0';
-                strcpy(writebuffer, readbuffer);
-                strcat(writebuffer, "\r\n\0");
-                printf("MESSAGE RECU DU SERVEUR: %s |", writebuffer);
-                write(descSockCOM, writebuffer, strlen(writebuffer));
+                printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
+                write(descSockCOM, readbuffer, strlen(readbuffer));
             }
         }
     }
