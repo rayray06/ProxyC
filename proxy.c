@@ -226,7 +226,6 @@ int main()
                 }
 
                 memset(&hints, 0, sizeof hints);
-                hints.ai_flags = AI_PASSIVE;     // mode serveur, nous allons utiliser la fonction bind
                 hints.ai_family = AF_INET;
                 hints.ai_socktype = SOCK_STREAM;
 
@@ -244,13 +243,13 @@ int main()
                     exit(1);
                 }
                 // Publication de la socket
-                ecode = bind(descSockData, res->ai_addr, res->ai_addrlen);
+                ecode = connect(descSockData, res->ai_addr, res->ai_addrlen);
                 if (ecode == -1)
                 {
-                    perror("Erreur liaison de la socket de Data");
+                    perror("Erreur connection a la socket de Data");
                     exit(3);
                 }
-                
+
                 // Nous n'avons plus besoin de cette liste chainée addrinfo
                 freeaddrinfo(res);
 
