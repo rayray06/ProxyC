@@ -185,7 +185,9 @@ int main()
                 readbuffer[ecode] = '\0';
                 printf("MESSAGE RECU DU SERVEUR: %s", readbuffer);
 
-            }else if(strncmp(readbuffer, "USER", 4) == 0)
+            }else{
+                printf("Commande inconnue recue : %s", readbuffer);
+            }
         }
     }
 
