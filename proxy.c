@@ -360,7 +360,7 @@ int main()
             }
             close(descSockCOM);
             close(descSockRDV);
-            exit(0)
+            exit(0);
         }
     }
 
