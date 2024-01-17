@@ -119,7 +119,7 @@ int main()
             exit(6);
         }
         // Echange de données avec le client connecté
-        pid_t pid = fork()
+        pid_t pid = fork();
 
         if (pid == 0)
         {
